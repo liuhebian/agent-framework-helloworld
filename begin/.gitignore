@@ -1,0 +1,9 @@
+.azure
+
+# Local environment values (never commit real endpoints/keys)
+.env
+
+# Python virtual environment and caches
+.venv/
+__pycache__/
+*.pyc
