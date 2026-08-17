@@ -1,14 +1,14 @@
-# Lab 2: Deploy Your Agent to Azure AI Foundry
+# Lab 2: Deploy Your Agent to Microsoft Foundry
 
-Welcome to Lab 2. In this lab, you will build a lightweight Azure AI Foundry host agent and deploy it using Azure Developer CLI (`azd`).
+Welcome to Lab 2. In this lab, you will build a lightweight Microsoft Foundry host agent and deploy it using Azure Developer CLI (`azd`).
 
 This lab is designed for people who are new to Python, agent development, and deployment. You will work from the `begin` folder and use the starter file `begin/hostagent.py`.
 
 By the end of this lab, you will be able to:
 - set up environment variables in a `.env` file
-- complete a starter host agent that connects to Azure AI Foundry
+- complete a starter host agent that connects to Microsoft Foundry
 - run the agent locally with `azd`
-- deploy the app to Azure AI Foundry or Azure-hosted environment using `azd deploy`
+- deploy the app to Microsoft Foundry or Azure-hosted environment using `azd deploy`
 - understand the difference between local testing and remote deployment
 
 ---
@@ -24,8 +24,8 @@ Before you begin, make sure you have the following tools installed:
 - Git
 - Azure CLI
 - Azure Developer CLI (`azd`)
-- Access to an Azure subscription and an Azure AI Foundry project
-- An Azure AI Foundry service with a deployed `gpt-5.4-mini` model
+- Access to an Azure subscription and an Microsoft Foundry project
+- An Microsoft Foundry service with a deployed `gpt-5.4-mini` model
 - The project files in this repository
 
 ### Install links
@@ -47,11 +47,11 @@ Before you begin, make sure you have the following tools installed:
 
 In this lab, you will create an agent that:
 - reads values from a `.env` file
-- connects to your Azure AI Foundry project
+- connects to your Microsoft Foundry project
 - uses a customer tool to return customer names by region
 - runs as a host agent through `ResponsesHostServer`
 
-The goal is not to build a huge production system. The goal is to understand how a simple agent can be hosted and deployed for Azure AI Foundry scenarios.
+The goal is not to build a huge production system. The goal is to understand how a simple agent can be hosted and deployed for Microsoft Foundry scenarios.
 
 ---
 
@@ -104,7 +104,7 @@ AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4-mini
 ```
 
 Important:
-- each person will have a different Azure AI Foundry endpoint
+- each person will have a different Microsoft Foundry endpoint
 - each person will also have a different deployment name
 - do not share or copy someone else's values
 
@@ -172,7 +172,7 @@ Find `TODO 3` and paste this in place of that comment to start the server:
     server.run()
 ```
 
-Remove the `pass` line at the end of `main()` since the function now has real code. This is the code path that allows the agent to be hosted in Azure AI Foundry and started locally for testing.
+Remove the `pass` line at the end of `main()` since the function now has real code. This is the code path that allows the agent to be hosted in Microsoft Foundry and started locally for testing.
 
 ---
 
@@ -391,7 +391,7 @@ azd version
 - make sure you are signed in with the correct Azure account
 - confirm you have access to the subscription and Foundry project
 
-### 4. The app cannot connect to Azure AI Foundry
+### 4. The app cannot connect to Microsoft Foundry
 Check:
 - the project endpoint value in `.env`
 - the model deployment name value in `.env`
@@ -449,7 +449,7 @@ azd deploy
 ## Lab summary
 
 In this lab, you learned how to:
-- configure environment variables for Azure AI Foundry
+- configure environment variables for Microsoft Foundry
 - complete a starter host agent in the `begin` folder
 - use `azd` for local agent testing and deployment
 - move from local validation to remote hosting
