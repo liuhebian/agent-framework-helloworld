@@ -23,6 +23,7 @@ Before you start, make sure you have all of the following:
 - uv installed on your machine
 - Internet access
 - An Azure account with access to the lab project in Azure AI Foundry
+- An Azure AI Foundry service with a deployed `gpt-5.4-mini` model
 - Azure CLI installed on your machine
 - Azure Developer CLI (`azd`) installed on your machine
 - Git installed on your machine
@@ -77,15 +78,17 @@ The agent will use a tool called `get_customer` to fetch the list from a predefi
 
 ---
 
-## Step 1: Open the project folder
+## Step 1: Clone and open the project folder
 
-1. Open VS Code.
-2. Open the folder:
-   - `AInstein-Agentlearninglab`
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/liuhebian/agent-framework-helloworld.git
+   ```
+
+2. Open VS Code and open the cloned `agent-framework-helloworld` folder.
 3. In the Explorer pane, locate the `begin` folder and the files inside it.
 4. You will work from the `begin` folder for this lab.
-
-The `final` folder is the completed reference solution and should only be used after you finish or if you need to compare your work.
 
 In the `begin` folder, you will see the starter files for the exercise.
 
@@ -166,52 +169,70 @@ You should see your subscription and account information.
 
 Open the starter file in the `begin` folder: `begin/basic.py`.
 
-This file intentionally includes placeholder comments where the working code should go. Your task in the lab is to fill in each section with the correct code.
+This file intentionally includes placeholder comments where the working code should go. You will build the agent step by step: first get a minimal agent running, then add a chat loop, and finally add a tool.
 
-The main sections to complete are:
+The numbered `TODO` comments mark where each block of code should go:
 
-1. A tool named `get_customer`
-   - This is the function the agent can call
-   - It returns a list of customers by region
-
-2. A client object using `FoundryChatClient`
+1. `TODO 1` — A client object using `FoundryChatClient`
    - This connects the Python code to Azure AI Foundry
 
-3. An `Agent` instance
+2. `TODO 2` — An `Agent` instance
    - This is the AI assistant
 
-4. A chat loop
-   - It asks for input and sends each message to the agent
+3. `TODO 3` — A quick test call, later replaced by a chat loop
+   - First you run the agent once, then you turn it into an interactive chat
 
-The file includes comments such as `TODO` and example code blocks to guide you. Follow those placeholders and replace them with the working code.
+4. `TODO 4` — A tool named `get_customer`
+   - This is a function the agent can call to look up customers by region
 
-> The `final` folder contains the completed working version. Use it only after the lab or if you get stuck.
+You will complete these in order over the next steps, testing after each stage so you always know your code works before adding more.
 
 ---
 
-## Step 6: Add your own AI project endpoint
+## Step 6: Create the client and agent, then test it
 
-The script needs your own Azure AI Foundry project endpoint. Each participant will have a different project URL.
+Start with the smallest possible working agent so you can confirm the connection to Azure AI Foundry before adding anything else.
 
-Find the line in the code that looks like this:
+### Find `TODO 1` and paste this
 
 ```python
-project_endpoint="https://<your-project-prefix>.services.ai.azure.com/api/projects/<your-project-name>"
+    client = FoundryChatClient(
+        project_endpoint="https://<your-project-prefix>.services.ai.azure.com/api/projects/<your-project-name>",
+        model="gpt-5.4-mini",
+        credential=AzureCliCredential(),
+    )
 ```
 
-Replace the placeholder values with your own project details from the lab instructions or your Azure AI Foundry project.
+The script needs your own Azure AI Foundry project endpoint. Each participant will have a different project URL. Replace the placeholder value with your own project details from the lab instructions or your Azure AI Foundry project.
 
 For example, your instructor may give you a value like:
 
 ```python
-project_endpoint="https://myproject-1234.services.ai.azure.com/api/projects/proj-learninglab"
+        project_endpoint="https://myproject-1234.services.ai.azure.com/api/projects/proj-learninglab",
 ```
 
 Important: do not copy someone else's endpoint. Each learner should use their own project endpoint.
 
----
+### Find `TODO 2` and paste this
 
-## Step 7: Run the lab script
+```python
+    agent = Agent(
+        client=client,
+        name="HelloAgent",
+        instructions="You are a friendly assistant. Keep your answers brief.",
+    )
+```
+
+### Find `TODO 3` and paste this
+
+```python
+    result = await agent.run("What is the capital of France?")
+    print(f"Agent: {result}")
+```
+
+Remove the `pass` line at the end of `main()` since the function now has real code.
+
+### Run it
 
 In the terminal, run:
 
@@ -219,18 +240,102 @@ In the terminal, run:
 python basic.py
 ```
 
-You should see something like:
+You should see a short answer, for example:
+
+```text
+Agent: The capital of France is Paris.
+```
+
+If you see a valid answer, your client and agent are working. Only continue once this works.
+
+---
+
+## Step 7: Add a chat loop
+
+Now turn the one-off test into an interactive chat so you can ask many questions in a row.
+
+Find the `TODO 3` code you just added:
+
+```python
+    result = await agent.run("What is the capital of France?")
+    print(f"Agent: {result}")
+```
+
+Replace it with this chat loop:
+
+```python
+    session = agent.create_session()
+    print("Chat started. Type 'exit' or 'bye' to quit.\n")
+    while True:
+        user_input = input("You: ").strip()
+        if user_input.lower() in ["exit", "bye"]:
+            print("Agent: Goodbye!")
+            break
+        result = await agent.run(user_input, session=session)
+        print(f"Agent: {result}\n")
+```
+
+Run the script again:
+
+```bash
+python basic.py
+```
+
+You should now see:
 
 ```text
 Chat started. Type 'exit' or 'bye' to quit.
 You:
 ```
 
-At this point, the program is waiting for your question.
+Ask a few general questions to confirm the loop works, then type `exit` or `bye` to stop.
 
 ---
 
-## Step 8: Test the agent
+## Step 8: Add the `get_customer` tool
+
+Now give the agent a tool so it can answer questions using your own data.
+
+### Find `TODO 4` and paste this
+
+```python
+@tool(approval_mode="never_require")
+def get_customer(
+    scope: Annotated[str, Field(description="Optional customer scope, for example all, Region A, Region B, Region C")] = "all",
+) -> str:
+    """Get my customer list."""
+    customers = {
+        "all": ["Customer A", "Customer B", "Customer C", "Customer D", "Customer E", "Customer F"],
+        "region a": ["Customer A", "Customer B"],
+        "region b": ["Customer C", "Customer D"],
+        "region c": ["Customer E", "Customer F"],
+    }
+    selected = customers.get(scope.lower(), customers["all"])
+    return f"Customers for scope '{scope}' are: {', '.join(selected)}."
+```
+
+### Wire the tool into the agent
+
+Update the `Agent` you created at `TODO 2` to include the tool:
+
+```python
+    agent = Agent(
+        client=client,
+        name="HelloAgent",
+        instructions="You are a friendly assistant. Keep your answers brief.",
+        tools=[get_customer],
+    )
+```
+
+---
+
+## Step 9: Test the agent
+
+Run the script again:
+
+```bash
+python basic.py
+```
 
 Try asking the agent:
 
@@ -260,7 +365,7 @@ Agent: Customers for scope 'Region A' are: Customer A, Customer B.
 
 ---
 
-## Step 9: Understand what happened
+## Step 10: Understand what happened
 
 The agent responded because:
 - it had a tool called `get_customer`
@@ -278,7 +383,7 @@ In real-world use, the tool could call:
 
 ---
 
-## Step 10: Exit the chat
+## Step 11: Exit the chat
 
 Type either of the following:
 
@@ -379,7 +484,6 @@ python3 basic.py
 
 7. Ask a simple customer question.
 8. Keep the script open and test a few variations.
-9. If needed, compare your work with the solution in the `final` folder.
 
 ### Helpful reminder
 Use very simple prompts like:

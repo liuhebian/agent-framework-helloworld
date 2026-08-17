@@ -25,6 +25,7 @@ Before you begin, make sure you have the following tools installed:
 - Azure CLI
 - Azure Developer CLI (`azd`)
 - Access to an Azure subscription and an Azure AI Foundry project
+- An Azure AI Foundry service with a deployed `gpt-5.4-mini` model
 - The project files in this repository
 
 ### Install links
@@ -60,17 +61,21 @@ For this lab, you should work in the `begin` folder.
 
 Important:
 - `begin` = where you complete the exercise
-- `final` = completed reference solution
 
 The starter file is:
 - `begin/hostagent.py`
 
 ---
 
-## Step 1: Open the project folder
+## Step 1: Clone and open the project folder
 
-1. Open VS Code.
-2. Open the repository folder.
+1. Clone the repository (skip this if you already cloned it in Lab 1):
+
+   ```bash
+   git clone https://github.com/liuhebian/agent-framework-helloworld.git
+   ```
+
+2. Open VS Code and open the cloned `agent-framework-helloworld` folder.
 3. Navigate to the `begin` folder.
 4. Open `begin/hostagent.py`.
 
@@ -109,28 +114,73 @@ Important:
 
 Open `begin/hostagent.py`.
 
-The starter file already includes placeholders and comments showing where the code should go. The main idea is that you will complete the missing sections during the lab.
+The starter file already includes numbered `TODO` comments showing where the code should go. You will build the host agent step by step: first the client, then the agent, then the host server, and finally the tool.
 
 The file already includes:
 - `load_dotenv()`
 - imports for `Agent`, `tool`, `FoundryChatClient`, and `ResponsesHostServer`
 - Azure credential setup
 
-The `TODO` comments in the file show you the exact sections to complete:
-1. the `@tool` function for customer lookup
-2. the `FoundryChatClient` using environment variables
-3. the `Agent` setup with `tools=[get_customer]`
-4. the `ResponsesHostServer` initialization and run call
+The `TODO` comments mark the exact sections to complete:
+1. `TODO 1` — the `FoundryChatClient` using environment variables
+2. `TODO 2` — the `Agent` setup
+3. `TODO 3` — the `ResponsesHostServer` initialization and run call
+4. `TODO 4` — the `@tool` function for customer lookup, added last
 
-Follow the comments and replace the placeholder sections with working code. The `final` folder contains the completed version if you need to compare your work.
+In the next steps you will copy the code for each `TODO` from this guide and paste it in place of the matching comment.
 
 ---
 
-## Step 4: Complete the tool function
+## Step 4: Complete the Foundry client setup (`TODO 1`)
 
-In the starter file, add a function that returns customer names by region.
+Find `TODO 1` and paste this in place of that comment to create the client from environment variables:
 
-Use a generic sample, for example:
+```python
+    client = FoundryChatClient(
+        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
+        credential=DefaultAzureCredential(),
+    )
+```
+
+This uses the values from your `.env` file and the Azure identity available on your machine.
+
+---
+
+## Step 5: Create the agent (`TODO 2`)
+
+Find `TODO 2` and paste this in place of that comment to create the agent:
+
+```python
+    agent = Agent(
+        client=client,
+        instructions="You are a friendly assistant. Keep your answers brief.",
+        default_options={"store": False},
+    )
+```
+
+At this point the agent has no tools yet. You will add one later.
+
+---
+
+## Step 6: Start the host server (`TODO 3`)
+
+Find `TODO 3` and paste this in place of that comment to start the server:
+
+```python
+    server = ResponsesHostServer(agent)
+    server.run()
+```
+
+Remove the `pass` line at the end of `main()` since the function now has real code. This is the code path that allows the agent to be hosted in Azure AI Foundry and started locally for testing.
+
+---
+
+## Step 7: Add the `get_customer` tool (`TODO 4`)
+
+Now give the agent a tool so it can answer questions using your own data.
+
+Find `TODO 4` and paste this in place of that comment. It returns customer names by region:
 
 ```python
 @tool(approval_mode="never_require")
@@ -147,51 +197,20 @@ def get_customer(
     return f"Customers for scope '{scope}' are: {', '.join(selected)}."
 ```
 
-This provides the agent with a simple lookup mechanism.
+Then update the `Agent` you created at `TODO 2` to include the tool:
+
+```python
+    agent = Agent(
+        client=client,
+        instructions="You are a friendly assistant. Keep your answers brief.",
+        default_options={"store": False},
+        tools=[get_customer],
+    )
+```
 
 ---
 
-## Step 5: Complete the Foundry client setup
-
-Add the code to create the client from environment variables:
-
-```python
-client = FoundryChatClient(
-    project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-    model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
-    credential=DefaultAzureCredential(),
-)
-```
-
-This uses the values from your `.env` file and the Azure identity available on your machine.
-
----
-
-## Step 6: Create the agent and host server
-
-Create the agent and bind the tool:
-
-```python
-agent = Agent(
-    client=client,
-    instructions="You are a friendly assistant. Keep your answers brief.",
-    default_options={"store": False},
-    tools=[get_customer],
-)
-```
-
-Then start the server:
-
-```python
-server = ResponsesHostServer(agent)
-server.run()
-```
-
-This is the code path that allows the agent to be hosted in Azure AI Foundry and started locally for testing.
-
----
-
-## Step 7: Sign in to Azure
+## Step 8: Sign in to Azure
 
 Before running the app, authenticate with Azure:
 
@@ -209,7 +228,7 @@ This gives the tools permission to access your Azure resources and your Foundry 
 
 ---
 
-## Step 8: Initialize the Azure Developer project
+## Step 9: Initialize the Azure Developer project
 
 In the project folder, run:
 
@@ -223,7 +242,7 @@ If the command asks for project details or Azure configuration, follow the promp
 
 ---
 
-## Step 9: Run the agent locally
+## Step 10: Run the agent locally
 
 Use the following command to start the agent locally:
 
@@ -243,7 +262,7 @@ If the app starts successfully, you should see the local agent running and ready
 
 ---
 
-## Step 10: Test the agent locally
+## Step 11: Test the agent locally
 
 Open a browser or use the local endpoint provided by your toolchain and ask the agent a question such as:
 
@@ -261,7 +280,7 @@ The agent should use the `get_customer` tool and respond with the list of custom
 
 ---
 
-## Step 11: Deploy remotely with azd
+## Step 12: Deploy remotely with azd
 
 Once the app works locally, deploy it with:
 
@@ -275,7 +294,7 @@ After deployment, test the remote endpoint and verify that the agent is respondi
 
 ---
 
-## Step 12: Understand the difference between local and remote
+## Step 13: Understand the difference between local and remote
 
 ### Local run
 Use `azd ai agent run` when you want to:
@@ -365,7 +384,6 @@ azd deploy
 ```
 
 7. Test the app again.
-8. Compare your result with the completed solution in the `final` folder if needed.
 
 ---
 
