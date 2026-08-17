@@ -24,8 +24,5 @@ def main():
 
     # TODO 3: Start the host server.
 
-    pass
-
-
 if __name__ == "__main__":
     main()

@@ -99,7 +99,7 @@ AZURE_AI_MODEL_DEPLOYMENT_NAME=<your-model-deployment-name>
 Example:
 
 ```env
-FOUNDRY_PROJECT_ENDPOINT=https://myproject-1234.services.ai.azure.com/api/projects/proj-learninglab
+FOUNDRY_PROJECT_ENDPOINT=https://contoso-1234.services.ai.azure.com/api/projects/contoso-agent-project
 AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4-mini
 ```
 
@@ -226,6 +226,46 @@ azd auth login
 
 This gives the tools permission to access your Azure resources and your Foundry project.
 
+> **Tip: fix the multifactor authentication (MFA) error during deployment**
+>
+> Some subscriptions require multifactor authentication (MFA). If a later step such as `azd provision` or `azd up` fails with an error like:
+>
+> ```text
+> ERROR: ... AzureDeveloperCLICredential: Azure Developer CLI requires multifactor authentication or additional claims.
+> ```
+>
+> `azd` is using a stale cached token that did not go through MFA. Fixing it takes three steps: remove the cached token, sign in again with the device code flow (which forces the MFA prompt), then retry.
+>
+> **1. Remove the cached `azd` token** (PowerShell on Windows). The cache lives in your user profile at `~/.azd/auth.json`. Back it up first, then delete it:
+>
+> ```powershell
+> Copy-Item "$env:USERPROFILE\.azd\auth.json" "$env:USERPROFILE\.azd\auth.json.bak" -Force -ErrorAction SilentlyContinue
+> Remove-Item "$env:USERPROFILE\.azd\auth.json" -Force -ErrorAction SilentlyContinue
+> ```
+>
+> **2. Sign in again with the device code flow** against the tenant in the error message:
+>
+> ```bash
+> azd auth login --tenant-id <your-tenant-id> --use-device-code
+> ```
+>
+> Replace `<your-tenant-id>` with the tenant ID shown in the error (the value after `--tenant-id` in the suggested command). Copy the code shown in the terminal, open https://microsoft.com/devicelogin, enter the code, and complete the sign-in **including the MFA prompt**.
+>
+> **3. Retry the deployment:**
+>
+> ```bash
+> azd provision
+> ```
+>
+> If you want to confirm the new token went through MFA, decode it and check the `acr` claim — a value of `"1"` means MFA was performed:
+>
+> ```powershell
+> $token = (azd auth token -o json --scope https://management.core.windows.net//.default --tenant-id <your-tenant-id> | ConvertFrom-Json).token
+> $p = $token.Split('.')[1].Replace('-','+').Replace('_','/')
+> switch ($p.Length % 4) { 2 { $p += '==' } 3 { $p += '=' } }
+> [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($p)) | ConvertFrom-Json | Select-Object acr, amr | ConvertTo-Json
+> ```
+
 ---
 
 ## Step 9: Initialize the Azure Developer project
@@ -236,9 +276,28 @@ In the project folder, run:
 azd ai agent init
 ```
 
-This initializes the project for agent-based Azure development.
+This initializes the project for agent-based Azure development. Use the following example to complete the prompts:
 
-If the command asks for project details or Azure configuration, follow the prompts or ask your instructor for help.
+```text
+? How do you want to initialize your agent? Use the code in the current directory
+? What is the name of your project? begin
+? Enter a name for your agent: begin
+? How would you like to deploy your agent? Container Image (Docker)
+? Which protocols does your agent support? responses
+? Select a Foundry project to host your agent and any models or tools it uses. Use an existing Foundry project
+? Select subscription: <select your Azure subscription>
+? Select a Foundry project: <select your Foundry project>
+? Enter your ACR login server (e.g., myregistry.azurecr.io), or leave blank to create a new one:
+? How would you like to configure model(s) for your agent? Use an existing model deployment
+? Select a model deployment: gpt-5.4-mini
+? Enter the command to start your agent (e.g., python main.py), or leave blank to skip: python hostagent.py
+```
+
+Important:
+- For **Select subscription**, choose the Azure subscription assigned to you. The displayed subscription name and ID will be different for each user.
+- For **Select a Foundry project**, choose your own Foundry project from the selected subscription. The project name and region will depend on your selection.
+- For the ACR login server, leave the value blank if you want `azd up` to create a new Azure Container Registry. Otherwise, enter the login server of an existing ACR you can use.
+- If your model deployment has a different name, select it and use that same name for `AZURE_AI_MODEL_DEPLOYMENT_NAME` in your `.env` file.
 
 ---
 

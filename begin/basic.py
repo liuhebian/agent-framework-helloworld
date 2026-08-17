@@ -18,8 +18,5 @@ async def main() -> None:
 
     # TODO 3: Run the agent once to test it, then later replace this with a chat loop.
 
-    pass
-
-
 if __name__ == "__main__":
     asyncio.run(main())

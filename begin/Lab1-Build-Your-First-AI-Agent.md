@@ -208,7 +208,7 @@ The script needs your own Azure AI Foundry project endpoint. Each participant wi
 For example, your instructor may give you a value like:
 
 ```python
-        project_endpoint="https://myproject-1234.services.ai.azure.com/api/projects/proj-learninglab",
+        project_endpoint="https://contoso-1234.services.ai.azure.com/api/projects/contoso-agent-project",
 ```
 
 Important: do not copy someone else's endpoint. Each learner should use their own project endpoint.
