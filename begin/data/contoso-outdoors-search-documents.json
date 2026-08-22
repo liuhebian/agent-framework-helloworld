@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Contoso Outdoors Return Policy",
+    "url": "https://contoso.com/policies/returns",
+    "content": "Customers may return any item within 30 days of delivery. Items should be unused and include original packaging. Refunds are issued to the original payment method within 5 business days of inspection."
+  },
+  {
+    "title": "Contoso Outdoors Shipping Guide",
+    "url": "https://contoso.com/help/shipping",
+    "content": "Standard shipping is free on orders over $50 and typically arrives in 3-5 business days within the continental United States. Expedited options are available at checkout."
+  },
+  {
+    "title": "TrailRunner Tent Care Instructions",
+    "url": "https://contoso.com/manuals/trailrunner-tent",
+    "content": "Clean the tent fabric with lukewarm water and a non-detergent soap. Allow it to air dry completely before storage and avoid prolonged UV exposure."
+  }
+]
