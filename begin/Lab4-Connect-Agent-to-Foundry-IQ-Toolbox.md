@@ -91,9 +91,9 @@ This lab depends on a **Foundry IQ toolbox** that contains the **Microsoft Learn
 
 1. Open your **Azure AI Foundry project** in the portal.
 2. In the left navigation, go to **Toolbox**.
-3. Select **Add toolbox** and follow the prompts to create a new toolbox.
-4. Inside the toolbox, add the **Microsoft Learn MCP tool** (add a tool via MCP and point it at the Microsoft Learn MCP server).
-5. Note the **toolbox name** — you will reference it from code through the `TOOLBOX_NAME` environment variable in the next step.
+3. Select **Add toolbox** and follow the prompts to create a new toolbox. Name it `microsoftlearn-toolbox`.
+4. Inside the toolbox, add the **Microsoft Learn MCP tool** (add a tool via MCP and point it at the Microsoft Learn MCP server at `https://learn.microsoft.com/api/mcp`).
+5. Note the **toolbox name** (`microsoftlearn-toolbox`) — you will reference it from code through the `TOOLBOX_NAME` environment variable in the next step.
 
 
 When you finish this step, you should have:
@@ -142,7 +142,7 @@ Fictitious example (do not use these values for a real deployment):
 ```env
 FOUNDRY_PROJECT_ENDPOINT=https://contoso-1234.services.ai.azure.com/api/projects/contoso-agent-project
 AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-5.4-mini
-TOOLBOX_NAME=mslearn-toolbox
+TOOLBOX_NAME=microsoftlearn-toolbox
 ```
 
 Important:
