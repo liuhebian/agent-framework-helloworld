@@ -238,7 +238,7 @@ Remove the `pass` line at the end of `main()` since the function now has real co
 Before running the app, authenticate with Azure:
 
 ```bash
-az login
+azd auth login
 ```
 
 This gives the app permission to access your Foundry project and the toolbox.
@@ -303,7 +303,7 @@ Make sure the value in `begin/.env` exactly matches the toolbox you created in S
 - ask a question that clearly needs documentation
 
 ### 3. Permission or authentication errors
-- confirm you ran `az login` with the correct account
+- confirm you ran `azd auth login` with the correct account
 - confirm your account has access to the Foundry project and the toolbox
 
 ---

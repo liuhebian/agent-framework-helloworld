@@ -267,7 +267,7 @@ Remove the `pass` line at the end of `main()` since the function now has real co
 Before running the app, authenticate with Azure:
 
 ```bash
-az login
+azd auth login
 ```
 
 This gives the app permission to access your Foundry project and your Azure AI Search service.
