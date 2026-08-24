@@ -65,6 +65,12 @@ The file you will complete is:
 
 ## Step 1: Open the project and the starter file
 
+> **Already did Lab 1 and Lab 2?** You already have the `agent-framework-helloworld` folder cloned. Just pull the latest changes to get the Lab 3 and Lab 4 guides and starter files:
+>
+> ```bash
+> git pull
+> ```
+
 1. Open VS Code and open the cloned `agent-framework-helloworld` folder (clone it first if you have not: `git clone https://github.com/liuhebian/agent-framework-helloworld.git`).
 2. Navigate to the `begin` folder.
 3. Open `begin/hostagent-iq.py`.
