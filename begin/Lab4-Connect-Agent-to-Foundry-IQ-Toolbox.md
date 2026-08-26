@@ -105,13 +105,7 @@ When you finish this step, you should have:
 
 ## Step 3: Install the packages
 
-The toolbox uses `FoundryToolbox`, which comes with the packages you already installed in the earlier labs. From the `begin` folder, with your virtual environment activated, make sure the requirements are installed:
-
-```bash
-uv pip install -r requirements.txt
-```
-
-If your environment is not activated yet, activate it first:
+The toolbox uses `FoundryToolbox`, which comes with the packages you already installed in the earlier labs. From the `begin` folder, activate your virtual environment first:
 
 On Windows PowerShell:
 
@@ -123,6 +117,12 @@ On macOS or Linux:
 
 ```bash
 source .venv/bin/activate
+```
+
+Then make sure the requirements are installed:
+
+```bash
+uv pip install -r requirements.txt
 ```
 
 ---
@@ -250,13 +250,13 @@ This gives the app permission to access your Foundry project and the toolbox.
 From the `begin` folder, start the agent:
 
 ```bash
-python hostagent-toolbox.py
+azd ai agent run --start-command "python hostagent-toolbox.py"
 ```
 
-If you want to use the `azd` command instead, you can also test it with:
+You can also run it directly with:
 
 ```bash
-azd ai agent run --start-command "python hostagent-toolbox.py"
+python hostagent-toolbox.py
 ```
 
 If the app starts successfully, you should see the local agent running and ready to accept requests.
