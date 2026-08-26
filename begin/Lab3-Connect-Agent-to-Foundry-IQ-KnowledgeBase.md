@@ -86,19 +86,19 @@ This lab depends on two resources that you will set up in your Azure AI Foundry 
 1. **An Azure AI Search service** — this stores and indexes your documents so the agent can retrieve them. Creating a knowledge base provisions this service for you.
 2. **A `text-embedding-3-small` embedding model** — this turns your documents and questions into vectors so the search service can find the most relevant passages.
 
-### 2a. Create the knowledge base (this creates the Azure AI Search service)
+### 2a. Deploy the embedding model
+
+1. In your Foundry project, go to **Models** (model catalog / deployments).
+2. Search for and deploy the **`text-embedding-3-small`** base model.
+3. The knowledge base uses this embedding model to convert your documents and questions into vectors.
+
+### 2b. Create the knowledge base (this creates the Azure AI Search service)
 
 1. Open your **Azure AI Foundry project** in the portal.
 2. In the left navigation, go to **Knowledge base**.
 3. Select **Create knowledge base** and follow the prompts.
 4. This step also **creates an Azure AI Search service** for you (or lets you connect an existing one) to store and index your documents.
 5. Add a **knowledge source**: upload the file `data/contoso-outdoors-search-documents.json` from this repository so its documents are indexed into the knowledge base.
-
-### 2b. Deploy the embedding model
-
-1. In your Foundry project, go to **Models** (model catalog / deployments).
-2. Search for and deploy the **`text-embedding-3-small`** base model.
-3. The knowledge base uses this embedding model to convert your documents and questions into vectors.
 
 > _<!-- ADD MORE DETAIL HERE IF NEEDED -->_
 > _You can add screenshots or extra detail for creating the knowledge base and deploying the embedding model here._
@@ -122,13 +122,7 @@ It is already listed in `begin/requirements.txt`:
 agent-framework-azure-ai-search
 ```
 
-From the `begin` folder, with your virtual environment activated, install the requirements again to pick it up:
-
-```bash
-uv pip install -r requirements.txt
-```
-
-If your environment is not activated yet, activate it first:
+From the `begin` folder, activate your virtual environment first:
 
 On Windows PowerShell:
 
@@ -140,6 +134,12 @@ On macOS or Linux:
 
 ```bash
 source .venv/bin/activate
+```
+
+Then install the requirements again to pick it up:
+
+```bash
+uv pip install -r requirements.txt
 ```
 
 ---
@@ -279,13 +279,13 @@ This gives the app permission to access your Foundry project and your Azure AI S
 From the `begin` folder, start the agent:
 
 ```bash
-python hostagent-iq.py
+azd ai agent run --start-command "python hostagent-iq.py"
 ```
 
-If you want to use the `azd` command instead, you can also test it with:
+You can also run it directly with:
 
 ```bash
-azd ai agent run --start-command "python hostagent-iq.py"
+python hostagent-iq.py
 ```
 
 If the app starts successfully, you should see the local agent running and ready to accept requests.
