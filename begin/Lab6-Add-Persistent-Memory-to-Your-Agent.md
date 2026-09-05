@@ -6,7 +6,7 @@ This lab builds on the earlier labs. You will keep working from the `begin` fold
 
 By the end of this lab, you will be able to:
 - understand what a Foundry Memory Store is and why persistent memory is useful
-- create a memory store from your agent code and connect to it with `FoundryMemoryProvider`
+- create a memory store from the Azure Portal and connect to it with `FoundryMemoryProvider`
 - save a fact to the store for a specific user
 - ask the agent a question and watch it answer using a remembered fact
 - run the agent locally
@@ -28,7 +28,28 @@ Before you begin, make sure you have the following. Most of these carry over fro
 - **A deployed `text-embedding-3-small` embedding model in your Foundry project** (used by the memory store)
 - You have completed Lab 1 (or you understand the agent pattern in `begin/basic.py`)
 
-> You do **not** need to create a memory store ahead of time. `hostagent-memory.py` creates it for you the first time you run it.
+### Create the memory store from Azure Portal
+
+Before you edit or run the agent, create the memory store used by this lab:
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/).
+2. Open the Azure AI Foundry resource that contains your project.
+3. On the resource **Overview** page, select **Go to Foundry portal**.
+4. In the Foundry portal, select the project you will use for this lab.
+5. In the left navigation, select **Build** > **Memory**. Because Memory is in preview, the label or location might vary slightly.
+6. Select **Create memory store**.
+7. Enter or select these values:
+
+    | Setting | Value |
+    | --- | --- |
+    | Name | `my-memory-store` |
+    | Description | `Memory store for the agent lab` |
+    | Chat model | Your deployed `gpt-5.4-mini` model |
+    | Embedding model | Your deployed `text-embedding-3-small` model |
+
+8. Select **Create** and wait until `my-memory-store` appears in the project.
+
+> The creation experience is hosted in the Microsoft Foundry portal. Azure Portal provides the entry point for opening the Foundry project.
 
 ### Install links
 - Visual Studio Code: https://code.visualstudio.com/download?_exp_download=d53503e735
@@ -42,7 +63,7 @@ Before you begin, make sure you have the following. Most of these carry over fro
 ## Lab objective
 
 In this lab, you will upgrade the agent so that it:
-- creates a Foundry Memory Store (if one does not already exist)
+- connects to the `my-memory-store` Foundry Memory Store you created in the prerequisite
 - saves a fact about the user (their coffee preference)
 - answers a later question using that remembered fact
 
@@ -85,7 +106,7 @@ The file you will complete is:
 2. Navigate to the `begin` folder.
 3. Open `begin/hostagent-memory.py`.
 
-You will see a starter script with numbered `TODO` comments, similar to the earlier labs. Unlike the earlier labs, this script also **creates the memory store** it needs, so there is no separate provisioning step — you only ever run `hostagent-memory.py`.
+You will see a starter script with numbered `TODO` comments, similar to the earlier labs. The script connects to the `my-memory-store` store you created in the prerequisite and verifies that it exists before using it.
 
 ---
 
@@ -122,7 +143,7 @@ FOUNDRY_PROJECT_ENDPOINT=https://<your-project-prefix>.services.ai.azure.com/api
 AZURE_AI_MODEL_DEPLOYMENT_NAME=<your-model-deployment-name>
 MEMORY_STORE_CHAT_MODEL_DEPLOYMENT_NAME=<your-chat-model-deployment-name>
 MEMORY_STORE_EMBEDDING_MODEL_DEPLOYMENT_NAME=<your-embedding-model-deployment-name>
-MEMORY_STORE_NAME=<your-memory-store-name>
+MEMORY_STORE_NAME=my-memory-store
 ```
 
 Fictitious example (do not use these values for a real deployment):
@@ -137,7 +158,8 @@ MEMORY_STORE_NAME=my-memory-store
 
 Important:
 - each person will have different values
-- `MEMORY_STORE_NAME` is the name the script will create (or reuse) the store under
+- `MEMORY_STORE_NAME` must exactly match `my-memory-store`, including the hyphens
+- the chat and embedding deployment names must match the models selected when you created the store
 
 ---
 
@@ -145,11 +167,11 @@ Important:
 
 Open `begin/hostagent-memory.py`.
 
-The starter file already includes numbered `TODO` comments showing where each block of code goes. You will build the agent step by step: first the client, then the memory provider, then create the store, then the agent, then save a memory, and finally use it.
+The starter file already includes numbered `TODO` comments showing where each block of code goes. You will build the agent step by step: first the client, then the memory provider, then verify the store, then create the agent, save a memory, and finally use it.
 
 The file already includes:
 - `load_dotenv()`
-- imports for `Agent`, `FoundryChatClient`, `FoundryMemoryProvider`, `MemoryStoreDefaultDefinition`, and `ResourceNotFoundError`
+- imports for `Agent`, `FoundryChatClient`, `FoundryMemoryProvider`, and `ResourceNotFoundError`
 - an async `AzureCliCredential` created with `async with`
 - a `scope` value (`user_123`) that isolates memories per user
 - the `async with client.project_client, memory_provider:` block that closes network sessions cleanly
@@ -157,7 +179,7 @@ The file already includes:
 The `TODO` comments mark the exact sections to complete:
 1. `TODO 1` — the `FoundryChatClient` using environment variables
 2. `TODO 2` — the `FoundryMemoryProvider`, connected to the store by name
-3. `TODO 3` — create the memory store if it does not already exist
+3. `TODO 3` — verify that the prerequisite memory store exists
 4. `TODO 4` — the `Agent`, with the memory provider attached via `context_providers`
 5. `TODO 5` — save a memory to the store
 6. `TODO 6` — ask the agent a question that relies on the saved memory
@@ -198,34 +220,28 @@ This is the new part in Lab 6. Find `TODO 2` and paste this in place of that com
 
 Notes:
 - `allow_preview=True` is required because the memory store API is still in preview.
-- `memory_store_name` is the store the next step will create (or reuse).
+- `memory_store_name` is the `my-memory-store` store you created in the prerequisite.
 - `scope` isolates memories to a single user.
 
 ---
 
-## Step 7: Create the memory store (`TODO 3`)
+## Step 7: Verify the memory store (`TODO 3`)
 
-This is what lets you run **only** `hostagent-memory.py` — the script creates the memory store it needs. Find `TODO 3` and paste this in place of that comment:
+Find `TODO 3` and paste this in place of that comment. This verifies that the store was created in the correct Foundry project and provides a clear error if its name does not match:
 
 ```python
-            # Create the memory store on first run; reuse it on later runs.
             try:
                 await memory_provider.project_client.beta.memory_stores.get(
                     os.environ["MEMORY_STORE_NAME"]
                 )
-            except ResourceNotFoundError:
-                await memory_provider.project_client.beta.memory_stores.create(
-                    name=os.environ["MEMORY_STORE_NAME"],
-                    description="Memory store for the agent lab",
-                    definition=MemoryStoreDefaultDefinition(
-                        chat_model=os.environ["MEMORY_STORE_CHAT_MODEL_DEPLOYMENT_NAME"],
-                        embedding_model=os.environ["MEMORY_STORE_EMBEDDING_MODEL_DEPLOYMENT_NAME"],
-                    ),
-                )
-                print(f"Created memory store: {os.environ['MEMORY_STORE_NAME']}")
+            except ResourceNotFoundError as error:
+                raise RuntimeError(
+                    f"Memory store '{os.environ['MEMORY_STORE_NAME']}' was not found. "
+                    "Create it in this Foundry project before running the agent."
+                ) from error
 ```
 
-The first time you run the script, the store does not exist, so `get` raises `ResourceNotFoundError` and the `create` call builds it. On later runs the store already exists, so nothing is recreated.
+The script does not create or change the store. It uses the models and options you selected when you created `my-memory-store` in the Foundry portal.
 
 ---
 
@@ -310,10 +326,9 @@ From the `begin` folder, run the agent:
 python hostagent-memory.py
 ```
 
-The first run creates the memory store, saves the fact, and answers the question. You should see output like this:
+The first run connects to the memory store, saves the fact, and answers the question. You should see output like this:
 
 ```text
-Created memory store: my-memory-store
 Updated with 1 memory operations
   - Operation: created, Memory ID: ..., Content: I prefer dark roast coffee and usually drink it in the morning
 Agent: You prefer dark roast coffee, and you usually drink it in the morning.
@@ -327,7 +342,7 @@ If the agent answers using the fact you saved — even though you never mentione
 
 To really see persistent memory in action:
 
-1. Comment out the `TODO 4` block (the `begin_update_memories` code) so no new memory is saved.
+1. Comment out the `TODO 5` block (the `begin_update_memories` code) so no new memory is saved.
 2. Run the script again:
 
    ```bash
@@ -343,11 +358,12 @@ This is the difference from Lab 1: the fact survives between runs.
 ## Common issues and how to fix them
 
 ### 1. `MEMORY_STORE_NAME` is missing or wrong
-Make sure `MEMORY_STORE_NAME` is set in `begin/.env`. The script creates the store under this name on the first run.
+Make sure `MEMORY_STORE_NAME=my-memory-store` is set in `begin/.env` and matches the store name shown in the Foundry project.
 
 ### 2. The memory store was not created
-- confirm the `TODO 3` block is in place and ran without error
-- confirm `MEMORY_STORE_CHAT_MODEL_DEPLOYMENT_NAME` and `MEMORY_STORE_EMBEDDING_MODEL_DEPLOYMENT_NAME` in `.env` point to models deployed in your Foundry project
+- return to the Azure AI Foundry resource in Azure Portal, select **Go to Foundry portal**, and open the same project used by `FOUNDRY_PROJECT_ENDPOINT`
+- under **Build** > **Memory**, confirm that `my-memory-store` exists
+- if it is missing, repeat the prerequisite creation steps and select the deployed chat and embedding models
 
 ### 3. Authentication failed on the memory service
 The memory service uses the **project's managed identity** to call the model, not your local login. If you see an authentication error, the project managed identity may be missing roles on the AI Services account (`Foundry User` and `Cognitive Services OpenAI User`). Ask your instructor or an Azure administrator to check the role assignments, and note that data-plane role changes can take 10–15 minutes to take effect.

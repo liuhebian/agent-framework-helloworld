@@ -4,9 +4,9 @@
 
 This agent uses :class:`FoundryMemoryProvider` to give an otherwise stateless
 hosted agent persistent, semantic memory backed by a Microsoft Foundry
-Memory Store. Running this script creates the memory store (if it does not
-already exist) and then uses it. The store name comes from the
-``MEMORY_STORE_NAME`` environment variable.
+Memory Store. Create the memory store in the Foundry portal before running
+this script. The store name comes from the ``MEMORY_STORE_NAME`` environment
+variable.
 
 """
 
@@ -15,7 +15,6 @@ import os
 
 from agent_framework import Agent
 from agent_framework.foundry import FoundryChatClient, FoundryMemoryProvider
-from azure.ai.projects.models import MemoryStoreDefaultDefinition
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity.aio import AzureCliCredential
 from dotenv import load_dotenv
@@ -38,7 +37,7 @@ async def main() -> None:
         # Enter the internal AIProjectClients so their aiohttp sessions are closed on
         # exit, avoiding "Unclosed client session / Unclosed connector" warnings.
         async with client.project_client, memory_provider:
-            # TODO 3: Create the memory store if it does not already exist.
+            # TODO 3: Verify that the prerequisite memory store exists.
 
             # TODO 4: Create the Agent and attach the memory provider via context_providers.
 
